@@ -233,11 +233,14 @@ func main() {
 
         e := echo.New()
 
+        // apply middleware.
+        e.Use(middleware.Static("static"))
+
         // apply custom middlewares.
         e.Use(ServerHeader)
 
         e.GET("/login", login)
-        e.GET("/", yallo)
+        e.GET("/yallo", yallo)
         e.GET("/cats/:data", getCats)
 
         e.POST("/cats", addCat)
