@@ -124,7 +124,7 @@ func main() {
         // g := e.Group("/admin", middleware.Logger())
         // g.Use(middleware.Logger())
         g.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-                Format: `[${time_rfc3339}] ${status} ${method} ${host}${path} ${letancy}` + "\n",
+                Format: `[${time_rfc3339}] ${status} ${method} ${host}${path} ${latency_human}` + "\n",
         }))
 
 	// Authentication.
