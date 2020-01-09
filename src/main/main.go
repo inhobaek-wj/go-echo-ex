@@ -273,6 +273,8 @@ func main() {
         jwtGroup.Use(middleware.JWTWithConfig(middleware.JWTConfig{
                 SigningMethod: "HS512",
                 SigningKey: []byte("mySecret"),
+		TokenLookup: "header:MyHeader",
+		AuthScheme: "iLoveDogs",
         }))
         jwtGroup.GET("/main", mainJwt)
 
