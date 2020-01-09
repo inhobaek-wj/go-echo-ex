@@ -15,6 +15,11 @@ type Cat struct {
         Type string `json:"type"`
 }
 
+type Dog struct {
+        Name string `json:"name"`
+        Type string `json:"type"`
+}
+
 func yallo (c echo.Context) error {
         return c.String(http.StatusOK, "yallo from the web site")
 }
@@ -65,6 +70,21 @@ func addCat(c echo.Context) error {
         return c.String(http.StatusOK, "We got your cat!")
 }
 
+func addDog(c echo.Context) error {
+	dog := Dog{}
+
+        defer c.Request().Body.Close()
+
+	err := json.NewDecoder(c.Request().Body).Decode(&dog)
+	if err != nil {
+		log.Printf("Failed processing addDog request: %s", err)
+                return c.String(http.StatusInternalServerError, "")
+	}
+
+        log.Printf("This is your dog: %#v", dog)
+        return c.String(http.StatusOK, "We got your dog!")
+}
+
 func main() {
         fmt.Println("Welocom to the server")
 
@@ -74,6 +94,7 @@ func main() {
         e.GET("/cats/:data", getCats)
 
         e.POST("/cats", addCat)
+        e.POST("/dogs", addDog)
 
         e.Start(":8080")
 }
