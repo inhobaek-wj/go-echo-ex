@@ -113,11 +113,24 @@ func mainAdmin(c echo.Context) error {
         return c.String(http.StatusOK, "Hooray you are on the secret admin main page!")
 }
 
+////////////////// custom middlewares //////////////////
+func ServerHeader(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		c.Response().Header().Set(echo.HeaderServer, "BlueBot/1.0")
+		c.Response().Header().Set("notReallyHeader", "thisHasNoMeaning")
+		return next(c)
+	}
+}
+
 func main() {
         fmt.Println("Welocom to the server")
 
         e := echo.New()
 
+	// apply custom middlewares.
+	e.Use(ServerHeader)
+
+	// add group.
         g := e.Group("/admin")
 
         // this logs the server interaction.
