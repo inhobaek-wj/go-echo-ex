@@ -20,6 +20,11 @@ type Dog struct {
         Type string `json:"type"`
 }
 
+type Hamster struct {
+        Name string `json:"name"`
+        Type string `json:"type"`
+}
+
 func yallo (c echo.Context) error {
         return c.String(http.StatusOK, "yallo from the web site")
 }
@@ -85,6 +90,19 @@ func addDog(c echo.Context) error {
         return c.String(http.StatusOK, "We got your dog!")
 }
 
+func addHamster(c echo.Context) error {
+	hamster := Hamster{}
+
+	err := c.Bind(&hamster)
+	if err != nil {
+		log.Printf("Failed processing addHamster request: %s", err)
+                return echo.NewHTTPError(http.StatusInternalServerError)
+	}
+
+        log.Printf("This is your hamster: %#v", hamster)
+        return c.String(http.StatusOK, "We got your hamster!")
+}
+
 func main() {
         fmt.Println("Welocom to the server")
 
@@ -95,6 +113,7 @@ func main() {
 
         e.POST("/cats", addCat)
         e.POST("/dogs", addDog)
+        e.POST("/hamsters", addHamster)
 
         e.Start(":8080")
 }
