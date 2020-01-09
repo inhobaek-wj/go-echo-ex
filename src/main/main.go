@@ -11,6 +11,8 @@ import (
 
         "github.com/labstack/echo"  // go get github.com/labstack/echo
         "github.com/labstack/echo/middleware" // https://echo.labstack.com/middleware
+
+        jwt "github.com/dgrijalva/jwt-go"
 )
 
 type Cat struct {
@@ -26,6 +28,11 @@ type Dog struct {
 type Hamster struct {
         Name string `json:"name"`
         Type string `json:"type"`
+}
+
+type JwtClaims struct {
+        Name string `json:"name"`
+        jwt.StandardClaims
 }
 
 func yallo (c echo.Context) error {
@@ -119,6 +126,17 @@ func mainCookie(c echo.Context) error {
         return c.String(http.StatusOK, "You are on the secret cookie page")
 }
 
+func mainJwt(c echo.Context) error {
+        user := c.Get("user") // this is interface.
+        token := user.(*jwt.Token)
+
+        if claim, ok := token.Claims.(jwt.MapClaims); ok {
+                log.Println("User name: ",claim["name"], "User Id: ", claim["jti"])
+        }
+
+        return c.String(http.StatusOK, "You are on the top secret jwt page!")
+}
+
 func login(c echo.Context) error {
         username := c.QueryParam("username")
         password := c.QueryParam("password")
@@ -136,9 +154,38 @@ func login(c echo.Context) error {
 
                 c.SetCookie(cookie)
 
-                return c.String(http.StatusOK, "You were logged in!")
+                // create jwt token.
+                token, err := createJwtToken(username)
+                if err != nil {
+                        log.Println("Error Creating JWT token", err)
+                        return c.String(http.StatusInternalServerError, "something went wrong")
+                }
+
+                return c.JSON(http.StatusOK, map[string]string{
+                        "message": "You were logged in!",
+                        "token": token,
+                })
         }
         return c.String(http.StatusOK, "Your username or password were wrong")
+}
+
+func createJwtToken(name string) (string, error){
+        claims := JwtClaims{
+                name,
+                jwt.StandardClaims{
+                        Id: "main_user_id",
+                        ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
+                },
+        }
+
+        rawToken := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
+        token, err := rawToken.SignedString([]byte("mySecret"))
+
+        if err != nil {
+                return "", err
+        }
+
+        return token, nil
 }
 
 ////////////////// custom middlewares //////////////////
@@ -160,8 +207,8 @@ func checkCookie(next echo.HandlerFunc) echo.HandlerFunc {
                                         http.StatusUnauthorized,
                                         "You don't have the right cookie, cookie1")
                         }
-			log.Println(err)
-			return err
+                        log.Println(err)
+                        return err
                 }
 
                 if cookie.Value == "some_string" {
@@ -220,6 +267,14 @@ func main() {
         cookieGroup.Use(checkCookie)
 
         cookieGroup.GET("/main", mainCookie)
+
+        // add JWT group.
+        jwtGroup := e.Group("/jwt")
+        jwtGroup.Use(middleware.JWTWithConfig(middleware.JWTConfig{
+                SigningMethod: "HS512",
+                SigningKey: []byte("mySecret"),
+        }))
+        jwtGroup.GET("/main", mainJwt)
 
         e.Start(":8080")
 }
