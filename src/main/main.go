@@ -38,7 +38,9 @@ func getCats (c echo.Context) error {
         if dataType == "string" {
                 return c.String(
                         http.StatusOK,
-                        fmt.Sprintf("Your cat name is %s and its type is %s\n", catName, catType))
+                        fmt.Sprintf("Your cat name is %s and its type is %s\n",
+                                catName,
+                                catType))
         }
 
         if dataType == "json" {
@@ -53,6 +55,7 @@ func getCats (c echo.Context) error {
         })
 }
 
+// the fastest.
 func addCat(c echo.Context) error {
         cat := Cat{}
 
@@ -76,28 +79,30 @@ func addCat(c echo.Context) error {
 }
 
 func addDog(c echo.Context) error {
-	dog := Dog{}
+        dog := Dog{}
 
         defer c.Request().Body.Close()
 
-	err := json.NewDecoder(c.Request().Body).Decode(&dog)
-	if err != nil {
-		log.Printf("Failed processing addDog request: %s", err)
+        err := json.NewDecoder(c.Request().Body).Decode(&dog)
+        if err != nil {
+                log.Printf("Failed processing addDog request: %s", err)
                 return c.String(http.StatusInternalServerError, "")
-	}
+        }
 
         log.Printf("This is your dog: %#v", dog)
         return c.String(http.StatusOK, "We got your dog!")
 }
 
+// the slowest.
+// it belongs to echo.
 func addHamster(c echo.Context) error {
-	hamster := Hamster{}
+        hamster := Hamster{}
 
-	err := c.Bind(&hamster)
-	if err != nil {
-		log.Printf("Failed processing addHamster request: %s", err)
+        err := c.Bind(&hamster)
+        if err != nil {
+                log.Printf("Failed processing addHamster request: %s", err)
                 return echo.NewHTTPError(http.StatusInternalServerError)
-	}
+        }
 
         log.Printf("This is your hamster: %#v", hamster)
         return c.String(http.StatusOK, "We got your hamster!")
