@@ -1,6 +1,8 @@
 package main
 
 import (
+        "router"
+
         "fmt"
         "net/http"
         "io/ioutil"
@@ -229,6 +231,14 @@ func checkCookie(next echo.HandlerFunc) echo.HandlerFunc {
 }
 
 func main() {
+        fmt.Println("Welocom to the server")
+
+        e := router.New()
+	e.Start(":8080")
+
+}
+
+func main_old() {
         fmt.Println("Welocom to the server")
 
         e := echo.New()
